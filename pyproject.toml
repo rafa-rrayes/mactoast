@@ -1,0 +1,33 @@
+[project]
+name = "mactoast"
+version = "0.1.0"
+description = "Simple, customizable toast notifications for macOS"
+readme = "README.md"
+authors = [
+    { name = "rafa-rrayes", email = "rafa@rayes.com.br" }
+]
+requires-python = ">=3.8"
+dependencies = [
+    "pyobjc-core>=10.0",
+    "pyobjc-framework-Cocoa>=10.0",
+    "rumps>=0.4.0",
+]
+keywords = ["macos", "notification", "toast", "popup", "gui"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

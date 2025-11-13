@@ -35,6 +35,14 @@ from mactoast import show_toast
 show_toast('Hello from macOS!')
 ```
 
+## Examples
+
+### Toast Styles
+
+| Success | Error | Warning | Info |
+|---------|-------|---------|------|
+| ![Success Toast](screenshots/success_toast.png) | ![Error Toast](screenshots/error_toast.png) | ![Warning Toast](screenshots/warning_toast.png) | ![Info Toast](screenshots/info_toast.png) |
+
 ## Usage Examples
 
 ### Basic Toast with Custom Colors

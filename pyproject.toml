@@ -1,6 +1,6 @@
 [project]
 name = "mactoast"
-version = "0.1.0"
+version = "0.0.1"
 description = "Simple, customizable toast notifications for macOS"
 readme = "README.md"
 authors = [
@@ -27,9 +27,6 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Desktop Environment",
 ]
-
-[project.optional-dependencies]
-examples = ["rumps>=0.4.0"]
 
 [project.urls]
 Homepage = "https://github.com/rafa-rrayes/mactoast"

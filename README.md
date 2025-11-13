@@ -4,12 +4,13 @@ A simple, elegant Python library for creating customizable toast notifications o
 
 ## Features
 
-- 🎨 **Fully Customizable**: Colors, size, position, timing, and more
-- 💊 **Pill-Shaped Design**: Borderless, modern UI with no title bar or buttons
-- ⚡ **Non-Blocking**: Works seamlessly with existing event loops (perfect for menu bar apps)
-- 🎭 **Smooth Animations**: Beautiful fade-out effects
+- 🎨 **Customizable**: Colors, size, position, timing, and more
+- 💊 **Modern Design**: Borderless, modern UI with no title bar or buttons
+- ⚡ **Non-Blocking**: Works with existing event loops and standalone scripts
+- 🎭 **Animated**: Fade-out animation
 - 🖱️ **Non-Clickable**: Notifications don't interfere with your workflow
 - 🪶 **Lightweight**: Minimal dependencies, uses native macOS APIs
+- 🤖 **Auto-Detection**: Automatically detects whether to use blocking or non-blocking mode
 
 ## Installation
 
@@ -28,10 +29,10 @@ pip install -e .
 ## Quick Start
 
 ```python
-from mactoast import show_popup
+from mactoast import show_toast
 
-# Simple red toast
-show_popup('Hello from macOS!')
+# Simple toast with default dark theme
+show_toast('Hello from macOS!')
 ```
 
 ## Usage Examples
@@ -39,20 +40,27 @@ show_popup('Hello from macOS!')
 ### Basic Toast with Custom Colors
 
 ```python
-from mactoast import show_popup
+from mactoast import show_toast
 
 # Blue toast
-show_popup(
+show_toast(
     'Operation completed!',
     bg_color=(0.0, 0.5, 1.0),  # RGB values (0.0-1.0)
     text_color=(1.0, 1.0, 1.0)
+)
+
+# Green success toast
+show_toast(
+    'Success!',
+    bg_color=(0.0, 0.8, 0.0),
+    text_color=(0.0, 0.0, 0.0)
 )
 ```
 
 ### Custom Size and Timing
 
 ```python
-show_popup(
+show_toast(
     'Custom popup!',
     width=400,
     height=100,
@@ -65,7 +73,7 @@ show_popup(
 
 ```python
 # Position at specific coordinates (x, y from bottom-left)
-show_popup(
+show_toast(
     'Top right corner',
     bg_color=(0.0, 0.8, 0.0),  # Green
     text_color=(0.0, 0.0, 0.0),  # Black text
@@ -77,7 +85,7 @@ show_popup(
 
 ```python
 # Square corners
-show_popup(
+show_toast(
     'Squared corners',
     corner_radius=5  # Default is height/2 for pill shape
 )
@@ -86,7 +94,7 @@ show_popup(
 ### Larger Text
 
 ```python
-show_popup(
+show_toast(
     'Big announcement!',
     font_size=24,
     width=350,
@@ -94,10 +102,20 @@ show_popup(
 )
 ```
 
-### Blocking Mode
+### Menu Bar App Integration
 
 ```python
-# Block until the toast closes (useful for scripts)
+import rumps
+from mactoast import show_toast
+
+class MyApp(rumps.App):
+    @rumps.clicked("Show Notification")
+    def show_notification(self, _):
+        show_toast('Task completed!', bg_color=(0.0, 0.5, 1.0))
+
+if __name__ == "__main__":
+    MyApp("My App").run()
+```
 show_popup(
     'Script completed!',
     blocking=True

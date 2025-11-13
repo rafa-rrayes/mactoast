@@ -22,9 +22,13 @@ from Foundation import NSTimer, NSRunLoop, NSDefaultRunLoopMode, NSRunLoopCommon
 warnings.filterwarnings('ignore', category=objc.ObjCPointerWarning)
 
 class _ToastWindow(NSObject):
-    """Internal class to create and manage toast window UI."""
+    """Internal class to create and manage toast window UI.
     
-    def initWithParams_(self, params):
+    This class should not be used directly. It's an implementation detail
+    for managing the actual NSWindow and UI components.
+    """
+    
+    def initWithParams_(self, params) -> '_ToastWindow':
         """Initialize with parameters."""
         self = objc.super(_ToastWindow, self).init()
         if not self:
@@ -119,20 +123,30 @@ class EmbeddedToast(NSObject):
     running (e.g., rumps, PyObjC apps). The toast uses timers for 
     non-blocking animations.
     
+    This class should typically be created using the show_toast() function,
+    which automatically detects the appropriate mode. Use this class directly
+    only when you need explicit control.
+    
     Example:
-        import rumps
-        from mactoast import EmbeddedToast
-        
-        class MyApp(rumps.App):
-            @rumps.clicked("Show Toast")
-            def show_toast(self, _):
-                toast = EmbeddedToast("Hello!")
-                toast.show()
-        
-        MyApp().run()
+        >>> import rumps
+        >>> from mactoast import EmbeddedToast
+        >>> 
+        >>> class MyApp(rumps.App):
+        ...     @rumps.clicked("Show Toast")
+        ...     def show_toast(self, _):
+        ...         toast = EmbeddedToast.alloc().initWithParams_((
+        ...             "Hello!", 280, 80, (0.2, 0.2, 0.2), (1.0, 1.0, 1.0),
+        ...             None, None, 2.0, 0.5, 16.0, 3
+        ...         ))
+        ...         toast.show()
+        >>> 
+        >>> MyApp().run()
+    
+    Note:
+        It's recommended to use show_toast() instead of instantiating this class directly.
     """
 
-    def initWithParams_(self, params):
+    def initWithParams_(self, params) -> 'EmbeddedToast':
         self = objc.super(EmbeddedToast, self).init()
         if not self:
             return None
@@ -214,15 +228,25 @@ class StandaloneToast(NSObject):
     Creates and manages its own NSApplication instance. The toast will
     block until the animation completes.
     
+    This class should typically be created using the show_toast() function,
+    which automatically detects the appropriate mode. Use this class directly
+    only when you need explicit control.
+    
     Example:
-        from mactoast import StandaloneToast
-        
-        toast = StandaloneToast("Hello, World!")
-        toast.show()
-        print("Toast finished, continuing...")
+        >>> from mactoast import StandaloneToast
+        >>> 
+        >>> toast = StandaloneToast.alloc().initWithParams_((
+        ...     "Hello, World!", 280, 80, (0.2, 0.2, 0.2), (1.0, 1.0, 1.0),
+        ...     None, None, 2.0, 0.5, 16.0, 3
+        ... ))
+        >>> toast.show()
+        >>> print("Toast finished, continuing...")
+    
+    Note:
+        It's recommended to use show_toast() instead of instantiating this class directly.
     """
     
-    def initWithParams_(self, params):
+    def initWithParams_(self, params) -> 'StandaloneToast':
         """Initialize with parameters."""
         self = objc.super(StandaloneToast, self).init()
         if not self:
@@ -389,25 +413,73 @@ def _make_standalone(
     )
     return StandaloneToast.alloc().initWithParams_(params)
 
-def toast(message, **kwargs):
+def show_toast(
+    message: str,
+    width: int = 280,
+    height: int = 80,
+    bg_color: Tuple[float, float, float] = (0.2, 0.2, 0.2),
+    text_color: Tuple[float, float, float] = (1.0, 1.0, 1.0),
+    position: Optional[Tuple[int, int]] = None,
+    corner_radius: Optional[float] = None,
+    display_duration: float = 2.0,
+    fade_duration: float = 0.5,
+    font_size: float = 16.0,
+    window_level: int = 3,
+) -> None:
+    """
+    Display a toast notification on macOS.
+    
+    Automatically detects whether to use embedded or standalone mode based on
+    whether an NSApplication is already running. Use this function unless you
+    need explicit control over the toast mode.
+    
+    Args:
+        message: Text to display in the toast
+        width: Window width in pixels (default: 280)
+        height: Window height in pixels (default: 80)
+        bg_color: Background color as RGB tuple with values 0.0-1.0 (default: dark gray)
+        text_color: Text color as RGB tuple with values 0.0-1.0 (default: white)
+        position: Optional (x, y) position from bottom-left. None to center (default: None)
+        corner_radius: Corner radius in pixels. None for pill shape (default: None)
+        display_duration: How long to display before fading in seconds (default: 2.0)
+        fade_duration: Fade out duration in seconds (default: 0.5)
+        font_size: Font size in points (default: 16.0)
+        window_level: Window level, higher = more on top (default: 3 for floating)
+    
+    Example:
+        >>> from mactoast import show_toast
+        >>> show_toast('Hello, World!')
+        >>> show_toast('Success!', bg_color=(0.0, 0.8, 0.0), text_color=(0.0, 0.0, 0.0))
+    """
     app = NSApplication.sharedApplication()
     try:
         running = bool(app.isRunning())
     except Exception:
         running = bool(NSApp() and NSApp().keyWindow())
+    
+    kwargs = {
+        'width': width,
+        'height': height,
+        'bg_color': bg_color,
+        'text_color': text_color,
+        'position': position,
+        'corner_radius': corner_radius,
+        'display_duration': display_duration,
+        'fade_duration': fade_duration,
+        'font_size': font_size,
+        'window_level': window_level,
+    }
+    
     if running:
-         return _make_embedded(message, **kwargs).show()
+        _make_embedded(message, **kwargs).show()
     else:
-        return _make_standalone(message, **kwargs).show()
+        _make_standalone(message, **kwargs).show()
 
 
-
-if __name__ == "__main__":
-    # Test standalone mode
-    toast(
-        message="Standalone Toast Test",
-        bg_color=(0.0, 0.5, 1.0),
-        display_duration=2.0,
-    )
+__all__ = [
+    'show_toast',
+    'EmbeddedToast',
+    'StandaloneToast',
+]
 
 

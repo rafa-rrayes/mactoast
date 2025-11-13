@@ -10,7 +10,6 @@ requires-python = ">=3.8"
 dependencies = [
     "pyobjc-core>=10.0",
     "pyobjc-framework-Cocoa>=10.0",
-    "rumps>=0.4.0",
 ]
 keywords = ["macos", "notification", "toast", "popup", "gui"]
 classifiers = [
@@ -26,7 +25,16 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Desktop Environment",
 ]
+
+[project.optional-dependencies]
+examples = ["rumps>=0.4.0"]
+
+[project.urls]
+Homepage = "https://github.com/rafa-rrayes/mactoast"
+Repository = "https://github.com/rafa-rrayes/mactoast"
+Issues = "https://github.com/rafa-rrayes/mactoast/issues"
 
 [build-system]
 requires = ["hatchling"]

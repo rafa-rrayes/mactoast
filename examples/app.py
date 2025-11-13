@@ -1,5 +1,6 @@
 import rumps
-from mactoast import show_embedded, show_standalone, show_auto
+from mactoast import show_toast
+
 class AwesomeStatusBarApp(rumps.App):
     def __init__(self):
         super(AwesomeStatusBarApp, self).__init__("Awesome App")
@@ -15,13 +16,13 @@ class AwesomeStatusBarApp(rumps.App):
 
     @rumps.clicked("Say hi")
     def sayhi(self, _):
-        t = show_auto(
+        show_toast(
             message="Hello, World!",
             display_duration=1.0,
             fade_duration=1.0,
             width=300,
             height=100,
         )
-        t.show()
+
 if __name__ == "__main__":
     AwesomeStatusBarApp().run()

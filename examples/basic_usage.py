@@ -6,7 +6,7 @@ This example demonstrates STANDALONE mode - for standalone Python scripts
 that don't have an existing NSApplication.
 """
 
-from mactoast import show_toast, StandaloneToast
+from mactoast import show_toast
 import time
 
 

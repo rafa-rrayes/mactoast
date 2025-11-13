@@ -8,6 +8,13 @@ Quick Start:
     >>> show_toast('Hello, World!')
     >>> show_toast('Success!', bg_color=(0.0, 0.8, 0.0))
 
+Styled notifications:
+    >>> from mactoast import show_success, show_error, show_warning, show_info
+    >>> show_success('File saved!')
+    >>> show_error('Operation failed!')
+    >>> show_warning('Low disk space')
+    >>> show_info('Update available')
+
 For advanced use cases where you need explicit control:
     >>> from mactoast import EmbeddedToast, StandaloneToast
 """

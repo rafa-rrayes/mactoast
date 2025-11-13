@@ -21,7 +21,7 @@ pip install mactoast
 Or install from source:
 
 ```bash
-git clone https://github.com/yourusername/mactoast.git
+git clone https://github.com/rafa-rrayes/mactoast.git
 cd mactoast
 pip install -e .
 ```
@@ -102,37 +102,9 @@ show_toast(
 )
 ```
 
-### Menu Bar App Integration
-
-```python
-import rumps
-from mactoast import show_toast
-
-class MyApp(rumps.App):
-    @rumps.clicked("Show Notification")
-    def show_notification(self, _):
-        show_toast('Task completed!', bg_color=(0.0, 0.5, 1.0))
-
-if __name__ == "__main__":
-    MyApp("My App").run()
-```
-show_popup(
-    'Script completed!',
-    blocking=True
-)
-```
-
-### Non-Blocking Mode (Default)
-
-```python
-# Perfect for menu bar apps using rumps or similar
-show_popup('Background task started')
-# Code continues immediately
-```
-
 ## API Reference
-
-### `show_popup()`
+    
+### `show_toast()`
 
 Display a customizable popup toast on macOS.
 
@@ -149,15 +121,7 @@ Display a customizable popup toast on macOS.
 - **fade_duration** (`float`, default=`1.0`): How long the fade-out takes (seconds)
 - **font_size** (`float`, default=`16.0`): Font size for the text
 - **window_level** (`int`, default=`3`): Window level (higher = more on top, 0=normal, 3=floating)
-- **blocking** (`bool`, default=`False`): If True, blocks until popup closes. If False, returns immediately
 
-## Use Cases
-
-- **Menu Bar Applications**: Show notifications from your rumps/menubar apps
-- **Build Scripts**: Display completion messages or errors
-- **Background Tasks**: Notify users when long-running tasks complete
-- **Desktop Automation**: Add visual feedback to your automation scripts
-- **Development Tools**: Show status updates during development
 
 ## Requirements
 

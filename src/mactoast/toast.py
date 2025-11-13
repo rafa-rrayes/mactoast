@@ -1,5 +1,6 @@
 import objc
 import warnings
+import threading
 from typing import Optional, Tuple
 from Cocoa import (
     NSApplication,
@@ -16,10 +17,10 @@ from Cocoa import (
     NSApplicationActivationPolicyAccessory,
     NSApp
 )
-from Foundation import NSTimer, NSRunLoop, NSDefaultRunLoopMode, NSRunLoopCommonModes, NSDate, NSObject
+from Foundation import NSTimer, NSRunLoop, NSDefaultRunLoopMode, NSRunLoopCommonModes, NSDate, NSObject, NSOperationQueue
 
 # Suppress PyObjC pointer warnings
-warnings.filterwarnings('ignore', category=objc.ObjCPointerWarning)
+# warnings.filterwarnings('ignore', category=objc.ObjCPointerWarning)
 
 class _ToastWindow(NSObject):
     """Internal class to create and manage toast window UI.
@@ -69,7 +70,7 @@ class _ToastWindow(NSObject):
         layer.setBackgroundColor_(bg.CGColor())
 
         # Label
-        text_height = font_size * 1.5
+        text_height = font_size *1.3
         text_y = (height - text_height) / 2
         label = NSTextField.alloc().initWithFrame_(NSMakeRect(15, text_y, width - 30, text_height))
         label.setStringValue_(message)
@@ -413,10 +414,30 @@ def _make_standalone(
     )
     return StandaloneToast.alloc().initWithParams_(params)
 
+class _ToastHelper(NSObject):
+    """Helper class to display toast on main thread."""
+    
+    def initWithParams_(self, params):
+        """Initialize with parameters."""
+        self = objc.super(_ToastHelper, self).init()
+        if not self:
+            return None
+        self.params = params
+        return self
+    
+    def showOnMainThread_(self, arg):
+        """Show toast (must be called on main thread). arg is ignored."""
+        message, kwargs, running = self.params
+        if running:
+            _make_embedded(message, **kwargs).show()
+        else:
+            _make_standalone(message, **kwargs).show()
+
+
 def show_toast(
     message: str,
-    width: int = 280,
-    height: int = 80,
+    width: int = None,
+    height: int = 40,
     bg_color: Tuple[float, float, float] = (0.2, 0.2, 0.2),
     text_color: Tuple[float, float, float] = (1.0, 1.0, 1.0),
     position: Optional[Tuple[int, int]] = None,
@@ -432,6 +453,9 @@ def show_toast(
     Automatically detects whether to use embedded or standalone mode based on
     whether an NSApplication is already running. Use this function unless you
     need explicit control over the toast mode.
+    
+    Thread-safe: Can be called from any thread; will automatically dispatch
+    to the main thread if needed.
     
     Args:
         message: Text to display in the toast
@@ -451,6 +475,10 @@ def show_toast(
         >>> show_toast('Hello, World!')
         >>> show_toast('Success!', bg_color=(0.0, 0.8, 0.0), text_color=(0.0, 0.0, 0.0))
     """
+
+    if width is None:
+        width = len(message) * (font_size * 0.6) + 30  # Approximate width based on text length
+
     app = NSApplication.sharedApplication()
     try:
         running = bool(app.isRunning())
@@ -470,16 +498,133 @@ def show_toast(
         'window_level': window_level,
     }
     
-    if running:
-        _make_embedded(message, **kwargs).show()
+    # Check if we're on the main thread
+    is_main_thread = threading.current_thread() is threading.main_thread()
+    
+    if is_main_thread:
+        # Directly show toast if on main thread
+        if running:
+            _make_embedded(message, **kwargs).show()
+        else:
+            _make_standalone(message, **kwargs).show()
     else:
-        _make_standalone(message, **kwargs).show()
+        # Use NSOperationQueue.mainQueue() to dispatch to main thread
+        # This works even without a running run loop
+        def show_on_main():
+            if running:
+                _make_embedded(message, **kwargs).show()
+            else:
+                _make_standalone(message, **kwargs).show()
+        
+        NSOperationQueue.mainQueue().addOperationWithBlock_(show_on_main)
+
+
+# Toast style presets
+class ToastStyle:
+    """Predefined toast styles for common notification types."""
+    
+    # Success: Green background with dark text
+    SUCCESS = {
+        'bg_color': (0.2, 0.8, 0.3),  # Green
+        'text_color': (0.0, 0.0, 0.0),  # Black
+    }
+    
+    # Error: Red background with white text
+    ERROR = {
+        'bg_color': (0.9, 0.2, 0.2),  # Red
+        'text_color': (1.0, 1.0, 1.0),  # White
+    }
+    
+    # Warning: Orange/Yellow background with dark text
+    WARNING = {
+        'bg_color': (1.0, 0.6, 0.0),  # Orange
+        'text_color': (0.0, 0.0, 0.0),  # Black
+    }
+    
+    # Info: Blue background with white text
+    INFO = {
+        'bg_color': (0.2, 0.5, 0.9),  # Blue
+        'text_color': (1.0, 1.0, 1.0),  # White
+    }
+    
+    # Default: Dark gray background with white text
+    DEFAULT = {
+        'bg_color': (0.2, 0.2, 0.2),  # Dark gray
+        'text_color': (1.0, 1.0, 1.0),  # White
+    }
+
+
+def show_success(message: str, **kwargs) -> None:
+    """
+    Show a success toast notification with green styling.
+    
+    Args:
+        message: Text to display
+        **kwargs: Additional parameters to pass to show_toast()
+    
+    Example:
+        >>> show_success("File saved successfully!")
+    """
+    style = ToastStyle.SUCCESS.copy()
+    style.update(kwargs)
+    show_toast(message, **style)
+
+
+def show_error(message: str, **kwargs) -> None:
+    """
+    Show an error toast notification with red styling.
+    
+    Args:
+        message: Text to display
+        **kwargs: Additional parameters to pass to show_toast()
+    
+    Example:
+        >>> show_error("Failed to load file")
+    """
+    style = ToastStyle.ERROR.copy()
+    style.update(kwargs)
+    show_toast(message, **style)
+
+
+def show_warning(message: str, **kwargs) -> None:
+    """
+    Show a warning toast notification with orange styling.
+    
+    Args:
+        message: Text to display
+        **kwargs: Additional parameters to pass to show_toast()
+    
+    Example:
+        >>> show_warning("Low disk space")
+    """
+    style = ToastStyle.WARNING.copy()
+    style.update(kwargs)
+    show_toast(message, **style)
+
+
+def show_info(message: str, **kwargs) -> None:
+    """
+    Show an info toast notification with blue styling.
+    
+    Args:
+        message: Text to display
+        **kwargs: Additional parameters to pass to show_toast()
+    
+    Example:
+        >>> show_info("Update available")
+    """
+    style = ToastStyle.INFO.copy()
+    style.update(kwargs)
+    show_toast(message, **style)
 
 
 __all__ = [
     'show_toast',
+    'show_success',
+    'show_error',
+    'show_warning',
+    'show_info',
+    'ToastStyle',
     'EmbeddedToast',
     'StandaloneToast',
 ]
-
-

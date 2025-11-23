@@ -16,7 +16,7 @@ An elegant and super easy to use Python library for creating customizable toast 
 |---------|-------|---------|------|
 | ![Success Toast](screenshots/success_toast.png) | ![Error Toast](screenshots/error_toast.png) | ![Warning Toast](screenshots/warning_toast.png) | ![Info Toast](screenshots/info_toast.png) |
 
-## Installation
+## Installation [![PyPI Downloads](https://static.pepy.tech/personalized-badge/mactoast?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/mactoast)
 
 ```bash
 pip install mactoast

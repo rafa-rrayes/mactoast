@@ -5,7 +5,7 @@ toast notifications with common styling patterns (success, error, warning, info)
 """
 
 from typing import Any
-from mactoast.toast import show_toast
+from mactoast._runner import toast
 
 
 class ToastStyle:
@@ -13,31 +13,31 @@ class ToastStyle:
     
     # Success: Green background with dark text
     SUCCESS = {
-        'bg_color': (0.2, 0.8, 0.3),  # Green
+        'bg': (0.2, 0.8, 0.3),  # Green
         'text_color': (0.0, 0.0, 0.0),  # Black
     }
     
     # Error: Red background with white text
     ERROR = {
-        'bg_color': (0.9, 0.2, 0.2),  # Red
+        'bg': (0.9, 0.2, 0.2),  # Red
         'text_color': (1.0, 1.0, 1.0),  # White
     }
     
     # Warning: Orange/Yellow background with dark text
     WARNING = {
-        'bg_color': (1.0, 0.6, 0.0),  # Orange
+        'bg': (1.0, 0.6, 0.0),  # Orange
         'text_color': (0.0, 0.0, 0.0),  # Black
     }
     
     # Info: Blue background with white text
     INFO = {
-        'bg_color': (0.2, 0.5, 0.9),  # Blue
+        'bg': (0.2, 0.5, 0.9),  # Blue
         'text_color': (1.0, 1.0, 1.0),  # White
     }
     
     # Default: Dark gray background with white text
     DEFAULT = {
-        'bg_color': (0.2, 0.2, 0.2),  # Dark gray
+        'bg': (0.2, 0.2, 0.2),  # Dark gray
         'text_color': (1.0, 1.0, 1.0),  # White
     }
 
@@ -48,7 +48,7 @@ def show_success(message: str, **kwargs: Any) -> None:
     
     Args:
         message: Text to display
-        **kwargs: Additional parameters to pass to show_toast()
+        **kwargs: Additional parameters to pass to toast()
     
     Example:
         >>> from mactoast import show_success
@@ -56,7 +56,7 @@ def show_success(message: str, **kwargs: Any) -> None:
     """
     style = ToastStyle.SUCCESS.copy()
     style.update(kwargs)
-    show_toast(message, **style)
+    toast(message, **style)
 
 
 def show_error(message: str, **kwargs: Any) -> None:
@@ -65,7 +65,7 @@ def show_error(message: str, **kwargs: Any) -> None:
     
     Args:
         message: Text to display
-        **kwargs: Additional parameters to pass to show_toast()
+        **kwargs: Additional parameters to pass to toast()
     
     Example:
         >>> from mactoast import show_error
@@ -73,7 +73,7 @@ def show_error(message: str, **kwargs: Any) -> None:
     """
     style = ToastStyle.ERROR.copy()
     style.update(kwargs)
-    show_toast(message, **style)
+    toast(message, **style)
 
 
 def show_warning(message: str, **kwargs: Any) -> None:
@@ -82,7 +82,7 @@ def show_warning(message: str, **kwargs: Any) -> None:
     
     Args:
         message: Text to display
-        **kwargs: Additional parameters to pass to show_toast()
+        **kwargs: Additional parameters to pass to toast()
     
     Example:
         >>> from mactoast import show_warning
@@ -90,7 +90,7 @@ def show_warning(message: str, **kwargs: Any) -> None:
     """
     style = ToastStyle.WARNING.copy()
     style.update(kwargs)
-    show_toast(message, **style)
+    toast(message, **style)
 
 
 def show_info(message: str, **kwargs: Any) -> None:
@@ -99,7 +99,7 @@ def show_info(message: str, **kwargs: Any) -> None:
     
     Args:
         message: Text to display
-        **kwargs: Additional parameters to pass to show_toast()
+        **kwargs: Additional parameters to pass to toast()
     
     Example:
         >>> from mactoast import show_info
@@ -107,7 +107,7 @@ def show_info(message: str, **kwargs: Any) -> None:
     """
     style = ToastStyle.INFO.copy()
     style.update(kwargs)
-    show_toast(message, **style)
+    toast(message, **style)
 
 
 __all__ = [

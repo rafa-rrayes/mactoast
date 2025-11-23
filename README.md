@@ -1,16 +1,20 @@
 # Mactoast 🍞
 
-A simple, elegant Python library for creating customizable toast notifications on macOS.
+An elegant and super easy to use Python library for creating customizable toast notifications on macOS.
 
 ## Features
 
 - 🎨 **Customizable**: Colors, size, position, timing, and more
 - 💊 **Modern Design**: Borderless, modern UI with no title bar or buttons
-- ⚡ **Non-Blocking**: Works with existing event loops and standalone scripts
-- 🎭 **Animated**: Fade-out animation
-- 🖱️ **Non-Clickable**: Notifications don't interfere with your workflow
-- 🪶 **Lightweight**: Minimal dependencies, uses native macOS APIs
-- 🤖 **Auto-Detection**: Automatically detects whether to use blocking or non-blocking mode
+- ⚡ **Non-Blocking**: Run toasts asynchronously without blocking your script
+- 🎭 **Animated**: Smooth fade-in and fade-out animations
+- 🪶 **Lightweight**: Minimal dependencies, uses a bundled native macOS app
+
+## Toast Styles
+
+| Success | Error | Warning | Info |
+|---------|-------|---------|------|
+| ![Success Toast](screenshots/success_toast.png) | ![Error Toast](screenshots/error_toast.png) | ![Warning Toast](screenshots/warning_toast.png) | ![Info Toast](screenshots/info_toast.png) |
 
 ## Installation
 
@@ -29,122 +33,123 @@ pip install -e .
 ## Quick Start
 
 ```python
-from mactoast import show_toast
+from mactoast import toast
 
-# Simple toast with default dark theme
-show_toast('Hello from macOS!')
+# Simple toast
+toast("Hello from macOS!")
 ```
-
-## Examples
-
-### Toast Styles
-
-| Success | Error | Warning | Info |
-|---------|-------|---------|------|
-| ![Success Toast](screenshots/success_toast.png) | ![Error Toast](screenshots/error_toast.png) | ![Warning Toast](screenshots/warning_toast.png) | ![Info Toast](screenshots/info_toast.png) |
 
 ## Usage Examples
 
 ### Basic Toast with Custom Colors
 
 ```python
-from mactoast import show_toast
+from mactoast import toast
 
-# Blue toast
-show_toast(
-    'Operation completed!',
-    bg_color=(0.0, 0.5, 1.0),  # RGB values (0.0-1.0)
-    text_color=(1.0, 1.0, 1.0)
+# Blue toast using hex color
+toast(
+    "Operation completed!",
+    bg="#0080FF",
+    text_color="#FFFFFF"
 )
 
-# Green success toast
-show_toast(
-    'Success!',
-    bg_color=(0.0, 0.8, 0.0),
+# Green success toast using RGB tuple (0.0-1.0)
+toast(
+    "Success!",
+    bg=(0.0, 0.8, 0.0),
     text_color=(0.0, 0.0, 0.0)
 )
 ```
 
-### Custom Size and Timing
+### Positioning
+
+You can use the `ToastPosition` enum for standard locations or a tuple for custom coordinates.
 
 ```python
-show_toast(
-    'Custom popup!',
-    width=400,
-    height=100,
-    display_duration=5.0,  # Show for 5 seconds
-    fade_duration=2.0       # Fade out over 2 seconds
-)
+from mactoast import toast, ToastPosition
+
+# Standard positions: TOP_RIGHT, TOP_LEFT, BOTTOM_RIGHT, BOTTOM_LEFT, CENTER
+toast("Top Right", position=ToastPosition.TOP_RIGHT)
+
+# Custom coordinates (x, y) from bottom-left of screen
+toast("Custom Spot", position=(500, 500))
 ```
 
-### Positioned Toast
+### Window Levels
+
+Control the z-index of your toast. Useful for showing notifications over full-screen apps or screensavers.
 
 ```python
-# Position at specific coordinates (x, y from bottom-left)
-show_toast(
-    'Top right corner',
-    bg_color=(0.0, 0.8, 0.0),  # Green
-    text_color=(0.0, 0.0, 0.0),  # Black text
-    position=(1200, 800)
-)
+from mactoast import toast, WindowLevel
+
+# Show above everything, including screensavers
+toast("Wake Up!", window_level=WindowLevel.SCREENSAVER)
+
+# Floating window (always on top of normal windows)
+toast("Always on top", window_level=WindowLevel.FLOATING)
 ```
 
-### Custom Corner Radius
+### Non-Blocking Mode
+
+By default, `toast()` blocks until the notification fades out. You can run it asynchronously:
 
 ```python
-# Square corners
-show_toast(
-    'Squared corners',
-    corner_radius=5  # Default is height/2 for pill shape
-)
+from mactoast import toast
+import time
+
+# This returns immediately
+process = toast("I won't stop you!", blocking=False)
+
+print("Script continues running...")
+time.sleep(2)
+
+# You can wait for it later if needed
+# process.wait()
 ```
 
-### Larger Text
+### Helper Functions
+
+Mactoast includes presets for common notification types:
 
 ```python
-show_toast(
-    'Big announcement!',
-    font_size=24,
-    width=350,
-    height=120
-)
+from mactoast import show_success, show_error, show_warning, show_info
+
+show_success("File saved successfully")
+show_error("Connection failed")
+show_warning("Disk space low")
+show_info("Update available")
 ```
 
 ## API Reference
-    
-### `show_toast()`
+
+### `toast()`
 
 Display a customizable popup toast on macOS.
 
 #### Parameters
 
-- **message** (`str`): Text to display in the toast
-- **width** (`int`, default=`280`): Width of the toast window in pixels
-- **height** (`int`, default=`80`): Height of the toast window in pixels
-- **bg_color** (`Tuple[float, float, float]`, default=`(1.0, 0.0, 0.0)`): Background color as RGB tuple (0.0-1.0 for each component)
-- **text_color** (`Tuple[float, float, float]`, default=`(1.0, 1.0, 1.0)`): Text color as RGB tuple (0.0-1.0 for each component)
-- **position** (`Optional[Tuple[int, int]]`, default=`None`): (x, y) position from bottom-left of screen, or None to center
-- **corner_radius** (`Optional[float]`, default=`None`): Corner radius in pixels, or None for pill shape (height/2)
-- **display_duration** (`float`, default=`2.0`): How long to display before fading (seconds)
-- **fade_duration** (`float`, default=`1.0`): How long the fade-out takes (seconds)
-- **font_size** (`float`, default=`16.0`): Font size for the text
-- **window_level** (`int`, default=`3`): Window level (higher = more on top, 0=normal, 3=floating)
-
+- **message** (`str`): Text to display in the toast.
+- **width** (`float`, optional): Width in points. Default: 280.
+- **height** (`float`, optional): Height in points. Default: 80.
+- **bg** (`str` | `tuple`, optional): Background color. Can be hex string (`#RRGGBB` or `#RRGGBBAA`) or RGB/RGBA tuple of floats (0.0-1.0).
+- **text_color** (`str` | `tuple`, optional): Text color. Same format as `bg`.
+- **position** (`ToastPosition` | `str` | `tuple`, optional): 
+    - Enum: `ToastPosition.TOP_RIGHT`, `ToastPosition.CENTER`, etc.
+    - Tuple: `(x, y)` coordinates.
+- **font_size** (`float`, optional): Font size in points. Default: 14.
+- **corner_radius** (`float`, optional): Corner radius. Default: 16.
+- **display_duration** (`float`, optional): Seconds to stay visible. Default: 2.5.
+- **fade_in_duration** (`float`, optional): Seconds to fade in. Default: 0.2.
+- **fade_out_duration** (`float`, optional): Seconds to fade out. Default: 0.2.
+- **window_level** (`WindowLevel` | `str`, optional): 
+    - Enum: `WindowLevel.NORMAL`, `WindowLevel.FLOATING`, `WindowLevel.SCREENSAVER`, etc.
+- **blocking** (`bool`, default=`True`): If `True`, waits for the toast to finish. If `False`, returns immediately.
 
 ## Requirements
 
-- macOS (tested on macOS 10.15+)
+- macOS 10.15+
 - Python 3.8+
-- PyObjC (automatically installed)
 
 ## License
 
 MIT License - see LICENSE file for details
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Acknowledgments
-
-Built with PyObjC and native macOS Cocoa APIs.

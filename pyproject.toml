@@ -16,7 +16,7 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: MacOS",
+    "Operating System :: MacOS :: MacOS X",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -36,3 +36,12 @@ Issues = "https://github.com/rafa-rrayes/mactoast/issues"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mac_toast*"]
+
+[tool.setuptools.package-data]
+# Include the whole app bundle
+"mac_toast" = ["ToastHUD.app/**"]

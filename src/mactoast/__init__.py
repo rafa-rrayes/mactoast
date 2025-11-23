@@ -6,28 +6,22 @@ on macOS using native Cocoa APIs.
 Quick Start:
     >>> from mactoast import show_toast
     >>> show_toast('Hello, World!')
-    >>> show_toast('Success!', bg_color=(0.0, 0.8, 0.0))
-
-Styled notifications:
-    >>> from mactoast import show_success, show_error, show_warning, show_info
-    >>> show_success('File saved!')
-    >>> show_error('Operation failed!')
-    >>> show_warning('Low disk space')
-    >>> show_info('Update available')
-
-For advanced use cases where you need explicit control:
-    >>> from mactoast import EmbeddedToast, StandaloneToast
+    >>> show_toast('Success!', bg=(0.0, 0.8, 0.0))
 """
+from ._runner import toast, ToastPosition, WindowLevel
+from .styles import show_success, show_error, show_warning, show_info, ToastStyle
 
-from mactoast.toast import (
-    show_toast,
-    EmbeddedToast,
-    StandaloneToast,
-)
+# Alias for backward compatibility or preference
+show_toast = toast
 
-__version__ = "0.1.0"
 __all__ = [
+    "toast",
     "show_toast",
-    "EmbeddedToast",
-    "StandaloneToast",
+    "ToastPosition",
+    "WindowLevel",
+    "show_success",
+    "show_error",
+    "show_warning",
+    "show_info",
+    "ToastStyle",
 ]

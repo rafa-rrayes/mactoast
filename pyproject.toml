@@ -1,16 +1,12 @@
 [project]
 name = "mactoast"
-version = "0.0.1"
+version = "0.0.3"
 description = "Simple, customizable toast notifications for macOS"
 readme = "README.md"
 authors = [
-    { name = "rafa-rrayes", email = "rafa@rayes.com.br" }
+    { name = "rafa-rrayes", email = "rafa@rayes.com.br", url = "https://github.com/rafa-rrayes" }
 ]
 requires-python = ">=3.8"
-dependencies = [
-    "pyobjc-core>=10.0",
-    "pyobjc-framework-Cocoa>=10.0",
-]
 keywords = ["macos", "notification", "toast", "popup", "gui"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -29,9 +25,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/rafa-rrayes/mactoast"
+Homepage = "https://github.com/rafa-rrayes/"
 Repository = "https://github.com/rafa-rrayes/mactoast"
-Issues = "https://github.com/rafa-rrayes/mactoast/issues"
 
 [build-system]
 requires = ["hatchling"]

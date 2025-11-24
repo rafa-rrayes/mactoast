@@ -35,8 +35,8 @@ build-backend = "hatchling.build"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["mac_toast*"]
+include = ["mactoast*"]
 
 [tool.setuptools.package-data]
 # Include the whole app bundle
-"mac_toast" = ["ToastHUD.app/**"]
+"mactoast" = ["ToastHUD.app/**"]

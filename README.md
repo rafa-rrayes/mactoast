@@ -18,7 +18,7 @@ An elegant and super easy to use Python library for creating customizable toast 
 
 | Success | Error | Warning | Info |
 |---------|-------|---------|------|
-| ![Success Toast](screenshots/success_toast.png) | ![Error Toast](screenshots/error_toast.png) | ![Warning Toast](screenshots/warning_toast.png) | ![Info Toast](screenshots/info_toast.png) |
+| ![Success Toast](https://github.com/rafa-rrayes/mactoast/blob/master/screenshots/success_toast.png) | ![Error Toast](https://github.com/rafa-rrayes/mactoast/blob/master/screenshots/error_toast.png) | ![Warning Toast](https://github.com/rafa-rrayes/mactoast/blob/master/screenshots/warning_toast.png) | ![Info Toast](https://github.com/rafa-rrayes/mactoast/blob/master/screenshots/info_toast.png) |
 
 ## Installation
 

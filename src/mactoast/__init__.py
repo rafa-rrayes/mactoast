@@ -8,7 +8,7 @@ Quick Start:
     >>> show_toast('Hello, World!')
     >>> show_toast('Success!', bg=(0.0, 0.8, 0.0))
 """
-from ._runner import toast, ToastPosition, WindowLevel
+from ._runner import toast, ToastPosition, WindowLevel, ToastConfigError
 from .styles import show_success, show_error, show_warning, show_info, ToastStyle
 
 # Alias for backward compatibility or preference
@@ -19,6 +19,7 @@ __all__ = [
     "show_toast",
     "ToastPosition",
     "WindowLevel",
+    "ToastConfigError",
     "show_success",
     "show_error",
     "show_warning",

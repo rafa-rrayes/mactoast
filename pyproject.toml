@@ -1,7 +1,7 @@
 [project]
 name = "mactoast"
-version = "0.1.0"
-description = "Elegant, customizable toast notifications for macOS with icons, sounds, and auto-sizing"
+version = "0.1.1"
+description = "Easy, elegant and customizable toast notifications for macOS with icons, sounds, and more."
 readme = "README.md"
 authors = [
     { name = "rafa-rrayes", email = "rafa@rayes.com.br" }

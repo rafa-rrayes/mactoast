@@ -5,6 +5,33 @@ All notable changes to mactoast will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2025-12-14
+
+### Added
+- **Comprehensive Parameter Validation**: All toast configuration options are now validated before execution
+  - New `ToastConfigError` exception for configuration errors
+  - Validates dimension conflicts (e.g., `auto_size=True` with explicit `width`/`height`)
+  - Checks numeric ranges for all parameters (width: 50-1000, height: 30-500, font_size: 8-72, etc.)
+  - Color format validation (hex strings must start with `#`, tuples must have 3-4 values 0.0-1.0)
+  - Position and window level validation with helpful error messages
+  - Duration validation including combined fade duration checks
+  - Sound file validation (bundled names or existing file paths)
+  - Parameter interaction validation (e.g., `check=True` requires `blocking=True`)
+  - Empty message detection
+  - Clear, descriptive error messages indicating exactly what's wrong and how to fix it
+
+- **Validation Test Suite**: New `test_validation.py` with 17 comprehensive tests
+  - Covers all parameter combinations and edge cases
+  - Ensures validation catches errors before subprocess execution
+  - Provides confidence in configuration correctness
+
+### Changed
+- **Documentation**: Added Parameter Validation section to DOCS.md
+  - Complete validation rules reference
+  - Examples of valid and invalid configurations
+  - Common error patterns with solutions
+  - Benefits of early error detection
+
 ## [0.1.0] - 2025-12-14
 
 Major feature release with icons, sounds, auto-sizing, and architecture improvements.

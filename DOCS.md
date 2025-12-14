@@ -11,6 +11,7 @@ Complete documentation for mactoast - an elegant Python library for creating cus
 - [ToastHUD Swift App](#toasthud-swift-app)
 - [Sound System](#sound-system)
 - [Building from Source](#building-from-source)
+- [Parameter Validation](#parameter-validation)
 - [Troubleshooting](#troubleshooting)
 
 ## Architecture Overview
@@ -680,6 +681,230 @@ python -c "import mactoast; mactoast.toast('Test message')"
 When modifying Python code:
 - Changes are immediate if installed with `pip install -e .`
 - No rebuild needed
+
+## Parameter Validation
+
+Mactoast includes comprehensive parameter validation to catch configuration errors before they happen. All validation errors raise `ToastConfigError` (a subclass of `ValueError`) with descriptive messages.
+
+### Using ToastConfigError
+
+```python
+from mactoast import toast, ToastConfigError
+
+try:
+    toast("Test", auto_size=True, width=200)
+except ToastConfigError as e:
+    print(f"Configuration error: {e}")
+    # "Cannot specify both auto_size=True and width. Set auto_size=False to use explicit width."
+```
+
+### Dimension Validation
+
+#### auto_size Conflicts
+
+- ❌ Cannot use `width` with `auto_size=True`
+- ❌ Cannot use `height` with `auto_size=True`
+- ❌ Cannot use `min_width` or `max_width` without `auto_size=True`
+
+```python
+# ✅ Valid
+toast("Hello", auto_size=True, min_width=100, max_width=400)
+toast("Hello", width=300, height=100)
+
+# ❌ Invalid
+toast("Hello", auto_size=True, width=300)  # auto_size conflicts with width
+toast("Hello", min_width=200)  # min_width requires auto_size=True
+```
+
+#### Value Ranges
+
+- `width`: 50-1000 points
+- `height`: 30-500 points
+- `min_width`: 50-1000 points (requires `auto_size=True`)
+- `max_width`: 50-1000 points (requires `auto_size=True`)
+- `min_width` must be ≤ `max_width`
+
+```python
+# ❌ Invalid
+toast("Hello", width=20)  # Too small
+toast("Hello", auto_size=True, min_width=400, max_width=200)  # min > max
+```
+
+### Color Validation
+
+Colors must be either:
+- **Hex string**: Starting with `#`, 6 or 8 characters (RGB or RGBA)
+- **Tuple**: 3 or 4 float values between 0.0 and 1.0
+
+```python
+# ✅ Valid
+toast("Hello", bg="#FF0000")
+toast("Hello", bg="#FF0000FF")
+toast("Hello", bg=(1.0, 0.0, 0.0))
+toast("Hello", bg=(1.0, 0.0, 0.0, 0.8))
+
+# ❌ Invalid
+toast("Hello", bg="FF0000")  # Missing #
+toast("Hello", bg="#FF")  # Wrong length
+toast("Hello", bg=(1.0, 0.0))  # Only 2 values
+toast("Hello", bg=(1.5, 0.0, 0.0))  # Value out of range (must be 0.0-1.0)
+```
+
+### Position Validation
+
+Must be one of:
+- **String**: `"top-right"`, `"top-left"`, `"bottom-right"`, `"bottom-left"`, `"center"`
+- **Enum**: `ToastPosition.TOP_RIGHT`, etc.
+- **Tuple**: `(x, y)` coordinates as numbers
+
+```python
+# ✅ Valid
+toast("Hello", position="top-right")
+toast("Hello", position=ToastPosition.CENTER)
+toast("Hello", position=(100, 200))
+
+# ❌ Invalid
+toast("Hello", position="middle")  # Invalid string
+toast("Hello", position=(100,))  # Only 1 coordinate
+```
+
+### Window Level Validation
+
+Must be one of: `"normal"`, `"floating"`, `"status"`, `"modal"`, `"max"`, `"screensaver"` (or corresponding `WindowLevel` enum)
+
+```python
+# ✅ Valid
+toast("Hello", window_level="floating")
+toast("Hello", window_level=WindowLevel.MODAL)
+
+# ❌ Invalid
+toast("Hello", window_level="super-high")  # Invalid level
+```
+
+### Duration Validation
+
+**Value Ranges:**
+- `display_duration`: 0.1-60.0 seconds
+- `fade_in_duration`: 0.0-5.0 seconds
+- `fade_out_duration`: 0.0-5.0 seconds
+
+**Combined Validation:**
+- `fade_in_duration + fade_out_duration` must be ≤ `display_duration`
+
+```python
+# ✅ Valid
+toast("Hello", display_duration=3.0, fade_in_duration=0.3, fade_out_duration=0.3)
+
+# ❌ Invalid
+toast("Hello", display_duration=0.05)  # Too short
+toast("Hello", display_duration=1.0, fade_in_duration=0.6, fade_out_duration=0.6)  # Fades exceed display
+```
+
+### Sound Validation
+
+**Valid bundled sound names:**
+- `beep1`, `beep2`, `beep3`, `beep4`, `beep5`
+- `confirmation1`, `confirmation2`, `confirmation3`, `confirmation4`, `confirmation5`
+- `pop1`, `pop2`, `pop3`
+- `scifi1`, `scifi2`, `scifi3`
+- `click1`
+
+**Custom sound files:**
+- Must be absolute path
+- Must exist on filesystem
+- Must have extension: `.wav`, `.mp3`, `.m4a`, `.aac`, `.aiff`, or `.caf`
+
+```python
+# ✅ Valid
+toast("Hello", sound="confirmation1")
+toast("Hello", sound="/path/to/custom.wav")
+
+# ❌ Invalid
+toast("Hello", sound="ding")  # Unknown sound
+toast("Hello", sound="/nonexistent.wav")  # File doesn't exist
+```
+
+### Other Validations
+
+**font_size**: 8-72 points
+
+**corner_radius**: 0-100 points
+
+**icon**: Must be a string (SF Symbol name)
+
+**blocking/check**: `check=True` requires `blocking=True`
+
+**message**: Must be a non-empty string
+
+```python
+# ✅ Valid
+toast("Hello", font_size=18, corner_radius=20)
+toast("Hello", icon="star.fill")
+toast("Hello", blocking=True, check=True)
+
+# ❌ Invalid
+toast("Hello", font_size=100)  # Too large
+toast("Hello", check=True, blocking=False)  # check requires blocking
+toast("")  # Empty message
+```
+
+### Testing Validation
+
+Run the validation test suite:
+
+```bash
+python test_validation.py
+```
+
+This runs 17 tests covering all parameter combinations and edge cases.
+
+### Common Error Patterns
+
+**1. Mixing auto_size with explicit dimensions**
+```python
+# ❌ Wrong
+toast("Hello", auto_size=True, width=300)
+
+# ✅ Correct - choose one approach
+toast("Hello", auto_size=True)  # Let it calculate
+toast("Hello", width=300, height=100)  # Explicit
+```
+
+**2. Using min/max_width without auto_size**
+```python
+# ❌ Wrong
+toast("Hello", max_width=400)
+
+# ✅ Correct
+toast("Hello", auto_size=True, max_width=400)
+```
+
+**3. Fade durations too long**
+```python
+# ❌ Wrong - 1.5s of fades for 1s display
+toast("Hello", display_duration=1.0, fade_in_duration=0.8, fade_out_duration=0.7)
+
+# ✅ Correct
+toast("Hello", display_duration=2.0, fade_in_duration=0.5, fade_out_duration=0.5)
+```
+
+**4. Invalid color formats**
+```python
+# ❌ Wrong
+toast("Hello", bg="red")  # Color name not supported
+toast("Hello", bg="FF0000")  # Missing #
+
+# ✅ Correct
+toast("Hello", bg="#FF0000")  # Hex
+toast("Hello", bg=(1.0, 0.0, 0.0))  # RGB tuple
+```
+
+### Benefits of Validation
+
+1. **Early error detection**: Catch mistakes before subprocess execution
+2. **Clear error messages**: Know exactly what's wrong and how to fix it
+3. **Better development experience**: IDE autocomplete + immediate feedback
+4. **Prevents silent failures**: Invalid configs are caught immediately
 
 ## Troubleshooting
 

@@ -39,6 +39,214 @@ class WindowLevel(str, Enum):
 ColorType = Union[str, Tuple[float, float, float], Tuple[float, float, float, float]]
 
 
+class ToastConfigError(ValueError):
+    """Raised when toast configuration options are incompatible or invalid."""
+    pass
+
+
+def _validate_color(color: ColorType, param_name: str) -> None:
+    """Validate color format."""
+    if isinstance(color, str):
+        if not color.startswith("#"):
+            raise ToastConfigError(
+                f"{param_name} must be a hex string starting with '#' "
+                f"(e.g., '#FF0000') or an RGB tuple. Got: {color}"
+            )
+        hex_part = color[1:]
+        if len(hex_part) not in (6, 8):
+            raise ToastConfigError(
+                f"{param_name} hex string must be 6 or 8 characters "
+                f"(RGB or RGBA). Got: {color}"
+            )
+    elif isinstance(color, (tuple, list)):
+        if len(color) not in (3, 4):
+            raise ToastConfigError(
+                f"{param_name} tuple must have 3 (RGB) or 4 (RGBA) values. "
+                f"Got {len(color)} values"
+            )
+        for i, val in enumerate(color):
+            if not isinstance(val, (int, float)):
+                raise ToastConfigError(
+                    f"{param_name}[{i}] must be a number. Got: {type(val).__name__}"
+                )
+            if not 0.0 <= val <= 1.0:
+                raise ToastConfigError(
+                    f"{param_name}[{i}] must be between 0.0 and 1.0. Got: {val}"
+                )
+    else:
+        raise ToastConfigError(
+            f"{param_name} must be a hex string or RGB(A) tuple. "
+            f"Got: {type(color).__name__}"
+        )
+
+
+def _validate_position(position: Union[ToastPosition, str, Tuple[float, float]]) -> None:
+    """Validate position format."""
+    if isinstance(position, (tuple, list)):
+        if len(position) != 2:
+            raise ToastConfigError(
+                f"position tuple must have exactly 2 values (x, y). "
+                f"Got {len(position)} values"
+            )
+        for i, val in enumerate(position):
+            if not isinstance(val, (int, float)):
+                raise ToastConfigError(
+                    f"position[{i}] must be a number. Got: {type(val).__name__}"
+                )
+    elif isinstance(position, str):
+        valid_positions = [p.value for p in ToastPosition]
+        if position not in valid_positions:
+            raise ToastConfigError(
+                f"position must be one of {valid_positions}. Got: {position}"
+            )
+    elif not isinstance(position, ToastPosition):
+        raise ToastConfigError(
+            f"position must be a ToastPosition enum, string, or (x, y) tuple. "
+            f"Got: {type(position).__name__}"
+        )
+
+
+def _validate_window_level(level: Union[WindowLevel, str]) -> None:
+    """Validate window level."""
+    if isinstance(level, str):
+        valid_levels = [l.value for l in WindowLevel]
+        if level not in valid_levels:
+            raise ToastConfigError(
+                f"window_level must be one of {valid_levels}. Got: {level}"
+            )
+    elif not isinstance(level, WindowLevel):
+        raise ToastConfigError(
+            f"window_level must be a WindowLevel enum or string. "
+            f"Got: {type(level).__name__}"
+        )
+
+
+def _validate_numeric_range(value: float, name: str, min_val: float, max_val: float) -> None:
+    """Validate numeric value is within range."""
+    if not isinstance(value, (int, float)):
+        raise ToastConfigError(
+            f"{name} must be a number. Got: {type(value).__name__}"
+        )
+    if not min_val <= value <= max_val:
+        raise ToastConfigError(
+            f"{name} must be between {min_val} and {max_val}. Got: {value}"
+        )
+
+
+def _validate_dimensions(
+    width: Optional[float],
+    height: Optional[float],
+    auto_size: bool,
+    min_width: Optional[float],
+    max_width: Optional[float],
+) -> None:
+    """Validate dimension-related parameters."""
+    # Check auto_size conflicts
+    if auto_size:
+        if width is not None:
+            raise ToastConfigError(
+                "Cannot specify both auto_size=True and width. "
+                "Set auto_size=False to use explicit width."
+            )
+        if height is not None:
+            raise ToastConfigError(
+                "Cannot specify both auto_size=True and height. "
+                "Set auto_size=False to use explicit height."
+            )
+    
+    # Validate width/height values if provided
+    if width is not None:
+        _validate_numeric_range(width, "width", 50, 1000)
+    if height is not None:
+        _validate_numeric_range(height, "height", 30, 500)
+    
+    # Validate min/max width
+    if min_width is not None:
+        _validate_numeric_range(min_width, "min_width", 50, 1000)
+    if max_width is not None:
+        _validate_numeric_range(max_width, "max_width", 50, 1000)
+    
+    # Check min/max relationship
+    if min_width is not None and max_width is not None:
+        if min_width > max_width:
+            raise ToastConfigError(
+                f"min_width ({min_width}) cannot be greater than "
+                f"max_width ({max_width})"
+            )
+    
+    # Check if min/max are used without auto_size
+    if not auto_size:
+        if min_width is not None:
+            raise ToastConfigError(
+                "min_width only applies when auto_size=True"
+            )
+        if max_width is not None:
+            raise ToastConfigError(
+                "max_width only applies when auto_size=True"
+            )
+
+
+def _validate_durations(
+    display_duration: Optional[float],
+    fade_in_duration: Optional[float],
+    fade_out_duration: Optional[float],
+) -> None:
+    """Validate duration parameters."""
+    if display_duration is not None:
+        _validate_numeric_range(display_duration, "display_duration", 0.1, 60.0)
+    
+    if fade_in_duration is not None:
+        _validate_numeric_range(fade_in_duration, "fade_in_duration", 0.0, 5.0)
+    
+    if fade_out_duration is not None:
+        _validate_numeric_range(fade_out_duration, "fade_out_duration", 0.0, 5.0)
+    
+    # Check if fade durations are reasonable compared to display duration
+    if display_duration is not None:
+        total_fade = 0.0
+        if fade_in_duration is not None:
+            total_fade += fade_in_duration
+        if fade_out_duration is not None:
+            total_fade += fade_out_duration
+        
+        if total_fade > display_duration:
+            raise ToastConfigError(
+                f"Combined fade durations ({total_fade}s) exceed "
+                f"display_duration ({display_duration}s). "
+                "The toast will not be visible at full opacity."
+            )
+
+
+def _validate_sound(sound: str) -> None:
+    """Validate sound parameter."""
+    # If it's an absolute path, just check it exists
+    if sound.startswith("/"):
+        if not os.path.exists(sound):
+            raise ToastConfigError(
+                f"Sound file not found: {sound}"
+            )
+        # Check extension
+        if not sound.lower().endswith(('.wav', '.mp3', '.m4a', '.aac', '.aiff', '.caf')):
+            raise ToastConfigError(
+                f"Sound file must be .wav, .mp3, .m4a, .aac, .aiff, or .caf. "
+                f"Got: {sound}"
+            )
+    else:
+        # It's a bundled sound name - validate it
+        valid_sounds = [
+            'beep1', 'beep2', 'beep3', 'beep4', 'beep5',
+            'confirmation1', 'confirmation2', 'confirmation3', 'confirmation4', 'confirmation5',
+            'pop1', 'pop2', 'pop3',
+            'scifi1', 'scifi2', 'scifi3',
+            'click1',
+        ]
+        if sound not in valid_sounds:
+            raise ToastConfigError(
+                f"Unknown sound name: {sound}. "
+                f"Valid sounds: {', '.join(valid_sounds)}"
+            )
+
+
 def _get_executable_path() -> str:
     if sys.platform != "darwin":
         raise RuntimeError("mactoast currently only supports macOS.")
@@ -165,7 +373,60 @@ def toast(
         sound: Sound name ('click1', 'confirmation1', 'confirmation2') or absolute path. Default: None (no sound).
         blocking: If True, wait for the toast to close before returning.
         check: If True, raise a CalledProcessError if the toast app fails (only if blocking=True).
+    
+    Raises:
+        ToastConfigError: If parameters are invalid or incompatible.
+        RuntimeError: If not running on macOS.
+        FileNotFoundError: If ToastHUD.app executable is not found.
     """
+    # Validate message
+    if not message or not isinstance(message, str):
+        raise ToastConfigError("message must be a non-empty string")
+    
+    # Validate dimensions and auto_size interactions
+    _validate_dimensions(width, height, auto_size, min_width, max_width)
+    
+    # Validate colors
+    if bg is not None:
+        _validate_color(bg, "bg")
+    if text_color is not None:
+        _validate_color(text_color, "text_color")
+    
+    # Validate position
+    if position is not None:
+        _validate_position(position)
+    
+    # Validate window level
+    if window_level is not None:
+        _validate_window_level(window_level)
+    
+    # Validate numeric parameters
+    if font_size is not None:
+        _validate_numeric_range(font_size, "font_size", 8, 72)
+    
+    if corner_radius is not None:
+        _validate_numeric_range(corner_radius, "corner_radius", 0, 100)
+    
+    # Validate durations
+    _validate_durations(display_duration, fade_in_duration, fade_out_duration)
+    
+    # Validate sound
+    if sound is not None:
+        _validate_sound(sound)
+    
+    # Validate icon (basic check - just ensure it's a string)
+    if icon is not None and not isinstance(icon, str):
+        raise ToastConfigError(
+            f"icon must be a string (SF Symbol name). Got: {type(icon).__name__}"
+        )
+    
+    # Validate blocking/check interaction
+    if check and not blocking:
+        raise ToastConfigError(
+            "check=True only makes sense when blocking=True. "
+            "Non-blocking mode cannot check exit status."
+        )
+    
     exe = _get_executable_path()
     
     # Use defaults

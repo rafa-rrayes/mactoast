@@ -4,47 +4,90 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (leave empty to use pyproject.toml version)'
+        required: false
+        type: string
 
 jobs:
-  build-and-publish:
-    name: Build and publish to PyPI
-    runs-on: macos-latest
+  build:
+    name: Build distribution
+    runs-on: macos-latest  # Required for ToastHUD.app binary
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+      
+      - name: Set up Python
+        run: uv python install 3.12
+      
+      - name: Verify ToastHUD.app bundle
+        run: |
+          echo "Checking ToastHUD.app structure..."
+          ls -R src/mactoast/ToastHUD.app/
+          echo "Verifying binary exists..."
+          test -f src/mactoast/ToastHUD.app/Contents/MacOS/ToastHUD || exit 1
+          echo "Verifying sounds exist..."
+          test -d src/mactoast/ToastHUD.app/Contents/Resources || exit 1
+          ls src/mactoast/ToastHUD.app/Contents/Resources/*.wav src/mactoast/ToastHUD.app/Contents/Resources/*.m4a src/mactoast/ToastHUD.app/Contents/Resources/*.mp3 || exit 1
+          echo "✅ Bundle verification passed"
+      
+      - name: Build package
+        run: uv build
+      
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  publish-to-pypi:
+    name: Publish to PyPI
+    needs: [build]
+    runs-on: ubuntu-latest
     
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+    environment:
+      name: pypi
+      url: https://pypi.org/p/mactoast
     
-    - name: Install UV
-      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
     
-    - name: Install dependencies
-      run: |
-        uv pip install --system build twine
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+      
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-to-testpypi:
+    name: Publish to TestPyPI (on manual trigger only)
+    if: github.event_name == 'workflow_dispatch'
+    needs: [build]
+    runs-on: ubuntu-latest
     
-    - name: Verify ToastHUD.app bundle
-      run: |
-        echo "Checking ToastHUD.app structure..."
-        ls -R src/mactoast/ToastHUD.app/
-        echo "Verifying binary exists..."
-        test -f src/mactoast/ToastHUD.app/Contents/MacOS/ToastHUD || exit 1
-        echo "Verifying sounds exist..."
-        test -d src/mactoast/ToastHUD.app/Contents/Resources || exit 1
-        ls src/mactoast/ToastHUD.app/Contents/Resources/*.wav src/mactoast/ToastHUD.app/Contents/Resources/*.m4a src/mactoast/ToastHUD.app/Contents/Resources/*.mp3 || exit 1
-        echo "✅ Bundle verification passed"
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/mactoast
     
-    - name: Build package
-      run: python -m build
+    permissions:
+      id-token: write
     
-    - name: Check distribution
-      run: twine check dist/*
-    
-    - name: Publish to PyPI
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-      run: twine upload dist/*
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+      
+      - name: Publish distribution to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/

@@ -10,7 +10,7 @@ import Cocoa
 
 class ToastPanel: NSPanel {
 
-    init(contentRect: NSRect, contentViewController: NSViewController) {
+    init(contentRect: NSRect, contentViewController: NSViewController, clickToDismiss: Bool = true) {
         super.init(
             contentRect: contentRect,
             styleMask: [.borderless],
@@ -26,7 +26,7 @@ class ToastPanel: NSPanel {
 
         // Float above normal windows but below critical stuff
         level = .screenSaver
-        // Show on all spaces & don’t participate in normal window cycling
+        // Show on all spaces & don't participate in normal window cycling
         collectionBehavior = [
             .canJoinAllSpaces,
             .fullScreenAuxiliary
@@ -35,8 +35,8 @@ class ToastPanel: NSPanel {
         // Don't vanish when other apps activate
         hidesOnDeactivate = false
 
-        // Optional: allow clicks to pass through
-        ignoresMouseEvents = true
+        // Allow clicks only if click-to-dismiss is enabled
+        ignoresMouseEvents = !clickToDismiss
     }
 
     override var canBecomeKey: Bool { false }

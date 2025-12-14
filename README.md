@@ -9,6 +9,10 @@ An elegant and super easy to use Python library for creating customizable toast 
 - ⚡ **Non-Blocking**: Run toasts asynchronously without blocking your script
 - 🎭 **Animated**: Smooth fade-in and fade-out animations
 - 🪶 **Lightweight**: Minimal dependencies, uses a bundled native macOS app
+- 🎯 **Icons**: Native SF Symbols support for beautiful icons
+- 👆 **Click to Dismiss**: Tap any toast to dismiss it immediately
+- 📏 **Auto-Size**: Automatically calculates optimal dimensions for your message
+- 🔊 **Sound Effects**: Built-in notification sounds with custom sound support
 
 ## Toast Styles
 
@@ -16,18 +20,10 @@ An elegant and super easy to use Python library for creating customizable toast 
 |---------|-------|---------|------|
 | ![Success Toast](screenshots/success_toast.png) | ![Error Toast](screenshots/error_toast.png) | ![Warning Toast](screenshots/warning_toast.png) | ![Info Toast](screenshots/info_toast.png) |
 
-## Installation [![PyPI Downloads](https://static.pepy.tech/personalized-badge/mactoast?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/mactoast)
+## Installation
 
 ```bash
 pip install mactoast
-```
-
-Or install from source:
-
-```bash
-git clone https://github.com/rafa-rrayes/mactoast.git
-cd mactoast
-pip install -e .
 ```
 
 ## Quick Start
@@ -37,118 +33,96 @@ from mactoast import toast
 
 # Simple toast
 toast("Hello from macOS!")
+
+# With icon and sound
+toast("Success!", icon="checkmark.circle.fill", sound="confirmation1")
+
+# Preset styles
+from mactoast import show_success, show_error, show_warning, show_info
+show_success("File saved!")
+show_error("Connection failed!")
 ```
 
-## Usage Examples
+## Key Examples
 
-### Basic Toast with Custom Colors
-
-```python
-from mactoast import toast
-
-# Blue toast using hex color
-toast(
-    "Operation completed!",
-    bg="#0080FF",
-    text_color="#FFFFFF"
-)
-
-# Green success toast using RGB tuple (0.0-1.0)
-toast(
-    "Success!",
-    bg=(0.0, 0.8, 0.0),
-    text_color=(0.0, 0.0, 0.0)
-)
-```
-
-### Positioning
-
-You can use the `ToastPosition` enum for standard locations or a tuple for custom coordinates.
+### Colors & Positioning
 
 ```python
 from mactoast import toast, ToastPosition
 
-# Standard positions: TOP_RIGHT, TOP_LEFT, BOTTOM_RIGHT, BOTTOM_LEFT, CENTER
-toast("Top Right", position=ToastPosition.TOP_RIGHT)
+# Custom colors
+toast("Blue toast", bg="#0080FF", text_color="#FFFFFF")
 
-# Custom coordinates (x, y) from bottom-left of screen
-toast("Custom Spot", position=(500, 500))
+# Position
+toast("Top Right", position=ToastPosition.TOP_RIGHT)
+toast("Custom", position=(500, 500))
 ```
 
-### Window Levels
-
-Control the z-index of your toast. Useful for showing notifications over full-screen apps or screensavers.
+### Auto-Size
 
 ```python
-from mactoast import toast, WindowLevel
-
-# Show above everything, including screensavers
-toast("Wake Up!", window_level=WindowLevel.SCREENSAVER)
-
-# Floating window (always on top of normal windows)
-toast("Always on top", window_level=WindowLevel.FLOATING)
+# Automatically sizes to fit content
+toast("Short!", auto_size=True)
+toast("This is a longer message that wraps", auto_size=True)
 ```
 
 ### Non-Blocking Mode
 
-By default, `toast()` blocks until the notification fades out. You can run it asynchronously:
-
 ```python
-from mactoast import toast
-import time
+# Launch toast and continue immediately
+process = toast("Background", blocking=False)
+print(f"Toast PID: {process.pid}")
 
-# This returns immediately
-process = toast("I won't stop you!", blocking=False)
-
-print("Script continues running...")
-time.sleep(2)
-
-# You can wait for it later if needed
-# process.wait()
+# Launch multiple toasts at once
+for i in range(4):
+    toast(f"Toast {i+1}", blocking=False)
 ```
 
-### Helper Functions
-
-Mactoast includes presets for common notification types:
+### Sound Effects
 
 ```python
-from mactoast import show_success, show_error, show_warning, show_info
+# 16 bundled sounds in 4 categories
+toast("Beep!", sound="beep1")
+toast("Success", sound="confirmation1")
+toast("Pop!", sound="pop2")
+toast("Sci-fi", sound="scifi1.m4a")
 
-show_success("File saved successfully")
-show_error("Connection failed")
-show_warning("Disk space low")
-show_info("Update available")
+# Custom sound file
+toast("Custom", sound="/path/to/sound.wav")
 ```
 
-## API Reference
+### Icons (SF Symbols)
 
-### `toast()`
+```python
+# Use any SF Symbol name
+toast("Download complete", icon="arrow.down.circle.fill")
+toast("Settings", icon="gearshape.fill")
+toast("Message", icon="paperplane.fill")
+```
 
-Display a customizable popup toast on macOS.
+## Complete Documentation
 
-#### Parameters
+For comprehensive documentation including:
+- Full API reference
+- ToastHUD Swift app architecture
+- Sound system details
+- Building from source
+- Advanced examples
+- Troubleshooting
 
-- **message** (`str`): Text to display in the toast.
-- **width** (`float`, optional): Width in points. Default: 280.
-- **height** (`float`, optional): Height in points. Default: 80.
-- **bg** (`str` | `tuple`, optional): Background color. Can be hex string (`#RRGGBB` or `#RRGGBBAA`) or RGB/RGBA tuple of floats (0.0-1.0).
-- **text_color** (`str` | `tuple`, optional): Text color. Same format as `bg`.
-- **position** (`ToastPosition` | `str` | `tuple`, optional): 
-    - Enum: `ToastPosition.TOP_RIGHT`, `ToastPosition.CENTER`, etc.
-    - Tuple: `(x, y)` coordinates.
-- **font_size** (`float`, optional): Font size in points. Default: 14.
-- **corner_radius** (`float`, optional): Corner radius. Default: 16.
-- **display_duration** (`float`, optional): Seconds to stay visible. Default: 2.5.
-- **fade_in_duration** (`float`, optional): Seconds to fade in. Default: 0.2.
-- **fade_out_duration** (`float`, optional): Seconds to fade out. Default: 0.2.
-- **window_level** (`WindowLevel` | `str`, optional): 
-    - Enum: `WindowLevel.NORMAL`, `WindowLevel.FLOATING`, `WindowLevel.SCREENSAVER`, etc.
-- **blocking** (`bool`, default=`True`): If `True`, waits for the toast to finish. If `False`, returns immediately.
+**See [DOCS.md](DOCS.md)**
 
 ## Requirements
 
 - macOS 10.15+
 - Python 3.8+
+
+## Links
+
+- **Documentation**: [DOCS.md](DOCS.md)
+- **PyPI**: https://pypi.org/project/mactoast/
+- **GitHub**: https://github.com/rafa-rrayes/mactoast
+- **SF Symbols**: https://developer.apple.com/sf-symbols/
 
 ## License
 

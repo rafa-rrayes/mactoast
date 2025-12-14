@@ -9,6 +9,9 @@ struct ToastView: View {
     let cornerRadius: CGFloat
     let width: CGFloat
     let height: CGFloat
+    let icon: String?  // SF Symbol name
+    let clickToDismiss: Bool
+    var onTap: (() -> Void)?  // Click-to-dismiss callback
 
     var body: some View {
         ZStack {
@@ -23,14 +26,28 @@ struct ToastView: View {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
 
-            Text(message)
-                .font(.system(size: fontSize, weight: .medium))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
-                .foregroundStyle(Color(nsColor: textColor))
+            // Content: Icon + Text
+            HStack(spacing: 12) {
+                if let iconName = icon, !iconName.isEmpty {
+                    Image(systemName: iconName)
+                        .font(.system(size: fontSize + 4, weight: .semibold))
+                        .foregroundStyle(Color(nsColor: textColor))
+                }
+                
+                Text(message)
+                    .font(.system(size: fontSize, weight: .medium))
+                    .foregroundStyle(Color(nsColor: textColor))
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
         }
-        // 👇 This is the important part: force the toast view to the requested size
         .frame(width: width, height: height)
+        .contentShape(Rectangle())  // Make entire area tappable
+        .onTapGesture {
+            if clickToDismiss {
+                onTap?()
+            }
+        }
     }
 }

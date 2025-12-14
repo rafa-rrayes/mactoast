@@ -1,13 +1,14 @@
 [project]
 name = "mactoast"
-version = "0.0.3"
-description = "Simple, customizable toast notifications for macOS"
+version = "0.1.0"
+description = "Elegant, customizable toast notifications for macOS with icons, sounds, and auto-sizing"
 readme = "README.md"
 authors = [
-    { name = "rafa-rrayes", email = "rafa@rayes.com.br", url = "https://github.com/rafa-rrayes" }
+    { name = "rafa-rrayes", email = "rafa@rayes.com.br" }
 ]
 requires-python = ">=3.8"
-keywords = ["macos", "notification", "toast", "popup", "gui"]
+license = { text = "MIT" }
+keywords = ["macos", "notification", "toast", "popup", "gui", "alert", "swift", "native"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -25,8 +26,11 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/rafa-rrayes/"
+Homepage = "https://github.com/rafa-rrayes/mactoast"
 Repository = "https://github.com/rafa-rrayes/mactoast"
+Documentation = "https://github.com/rafa-rrayes/mactoast/blob/master/DOCS.md"
+"Bug Reports" = "https://github.com/rafa-rrayes/mactoast/issues"
+Changelog = "https://github.com/rafa-rrayes/mactoast/blob/master/CHANGELOG.md"
 
 [build-system]
 requires = ["hatchling"]

@@ -1,0 +1,7 @@
+include README.md
+include DOCS.md
+include CHANGELOG.md
+include LICENSE
+recursive-include src/mactoast/ToastHUD.app *
+recursive-exclude src/mactoast/ToastHUD.app/__pycache__ *
+recursive-exclude src/mactoast/ToastHUD.app *.pyc

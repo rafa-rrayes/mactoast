@@ -28,6 +28,12 @@ A lightweight, customizable toast notification tool for macOS, controllable via 
 | `--text-color` | Text color in hex format. | `#FFFFFF` |
 | `--font-size` | Font size of the message. | `14` |
 | `--corner-radius` | Corner radius of the toast background. | `16` |
+| `--icon` | SF Symbol name to display (e.g., `checkmark.circle.fill`). | `nil` |
+
+### Interaction
+| Flag | Description | Default |
+|------|-------------|---------|
+| Click on toast | Immediately dismisses the toast with fade-out animation. | N/A |
 
 ### Timing & Animation
 | Flag | Description | Default |
@@ -66,4 +72,15 @@ A lightweight, customizable toast notification tool for macOS, controllable via 
 **Custom Coordinate:**
 ```bash
 ./ToastHUD "Custom Spot" --x 500 --y 500
+```
+
+**With Icon:**
+```bash
+./ToastHUD "File Saved!" --icon checkmark.circle.fill --bg #34C759
+```
+
+**Click to Dismiss:**
+Toasts can be dismissed early by clicking on them. Try with a long duration:
+```bash
+./ToastHUD "Click me to dismiss!" --icon hand.tap.fill --display-duration 30
 ```

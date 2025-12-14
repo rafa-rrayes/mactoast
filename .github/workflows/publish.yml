@@ -1,0 +1,50 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    name: Build and publish to PyPI
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install UV
+      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+    
+    - name: Install dependencies
+      run: |
+        uv pip install --system build twine
+    
+    - name: Verify ToastHUD.app bundle
+      run: |
+        echo "Checking ToastHUD.app structure..."
+        ls -R src/mactoast/ToastHUD.app/
+        echo "Verifying binary exists..."
+        test -f src/mactoast/ToastHUD.app/Contents/MacOS/ToastHUD || exit 1
+        echo "Verifying sounds exist..."
+        test -d src/mactoast/ToastHUD.app/Contents/Resources || exit 1
+        ls src/mactoast/ToastHUD.app/Contents/Resources/*.wav src/mactoast/ToastHUD.app/Contents/Resources/*.m4a src/mactoast/ToastHUD.app/Contents/Resources/*.mp3 || exit 1
+        echo "✅ Bundle verification passed"
+    
+    - name: Build package
+      run: python -m build
+    
+    - name: Check distribution
+      run: twine check dist/*
+    
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: twine upload dist/*

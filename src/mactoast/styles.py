@@ -15,24 +15,32 @@ class ToastStyle:
     SUCCESS = {
         'bg': (0.2, 0.8, 0.3),  # Green
         'text_color': (0.0, 0.0, 0.0),  # Black
+        'icon': 'checkmark.circle.fill',
+        'sound': 'confirmation1',
     }
     
     # Error: Red background with white text
     ERROR = {
         'bg': (0.9, 0.2, 0.2),  # Red
         'text_color': (1.0, 1.0, 1.0),  # White
+        'icon': 'xmark.circle.fill',
+        'sound': 'beep1',
     }
     
     # Warning: Orange/Yellow background with dark text
     WARNING = {
         'bg': (1.0, 0.6, 0.0),  # Orange
         'text_color': (0.0, 0.0, 0.0),  # Black
+        'icon': 'exclamationmark.triangle.fill',
+        'sound': 'beep1',
     }
     
     # Info: Blue background with white text
     INFO = {
         'bg': (0.2, 0.5, 0.9),  # Blue
         'text_color': (1.0, 1.0, 1.0),  # White
+        'icon': 'info.circle.fill',
+        'sound': 'confirmation2',
     }
     
     # Default: Dark gray background with white text
@@ -42,7 +50,7 @@ class ToastStyle:
     }
 
 
-def show_success(message: str, **kwargs: Any) -> None:
+def show_success(message: str, **kwargs: Any):
     """
     Show a success toast notification with green styling.
     
@@ -56,10 +64,10 @@ def show_success(message: str, **kwargs: Any) -> None:
     """
     style = ToastStyle.SUCCESS.copy()
     style.update(kwargs)
-    toast(message, **style)
+    return toast(message, **style)
 
 
-def show_error(message: str, **kwargs: Any) -> None:
+def show_error(message: str, **kwargs: Any):
     """
     Show an error toast notification with red styling.
     
@@ -73,10 +81,10 @@ def show_error(message: str, **kwargs: Any) -> None:
     """
     style = ToastStyle.ERROR.copy()
     style.update(kwargs)
-    toast(message, **style)
+    return toast(message, **style)
 
 
-def show_warning(message: str, **kwargs: Any) -> None:
+def show_warning(message: str, **kwargs: Any):
     """
     Show a warning toast notification with orange styling.
     
@@ -90,10 +98,10 @@ def show_warning(message: str, **kwargs: Any) -> None:
     """
     style = ToastStyle.WARNING.copy()
     style.update(kwargs)
-    toast(message, **style)
+    return toast(message, **style)
 
 
-def show_info(message: str, **kwargs: Any) -> None:
+def show_info(message: str, **kwargs: Any):
     """
     Show an info toast notification with blue styling.
     
@@ -107,7 +115,7 @@ def show_info(message: str, **kwargs: Any) -> None:
     """
     style = ToastStyle.INFO.copy()
     style.update(kwargs)
-    toast(message, **style)
+    return toast(message, **style)
 
 
 __all__ = [

@@ -34,6 +34,9 @@ struct ToastConfig {
     var x: CGFloat?
     var y: CGFloat?
     var windowLevel: String?
+    var icon: String?  // SF Symbol name (e.g., "checkmark.circle.fill")
+    var clickToDismiss: Bool = true
+    var sound: String?  // Path to sound file
 }
 
 extension ToastConfig {
@@ -84,8 +87,15 @@ extension ToastConfig {
             } else if arg == "--y", let value = readValue(after: &i), let yVal = Double(value) {
                 config.y = CGFloat(yVal)
             } else if arg == "--window-level", let value = readValue(after: &i) {
-
                 config.windowLevel = value
+            } else if arg == "--icon", let value = readValue(after: &i) {
+                config.icon = value
+            } else if arg == "--click-to-dismiss", let value = readValue(after: &i) {
+                config.clickToDismiss = value.lowercased() == "true" || value == "1"
+            } else if arg == "--no-click-to-dismiss" {
+                config.clickToDismiss = false
+            } else if arg == "--sound", let value = readValue(after: &i) {
+                config.sound = value
             } else if arg.hasPrefix("--") {
                 // Unknown flag – ignore it (and optional value)
                 // If it has a value that doesn't start with --, skip that too

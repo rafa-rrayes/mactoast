@@ -18,10 +18,10 @@ Complete documentation for mactoast - an elegant Python library for creating cus
 Mactoast uses a hybrid Python + Swift architecture:
 
 ```
-┌─────────────────┐         ┌──────────────────┐
-│  Python Package │ ───────>│  ToastHUD.app    │
+┌─────────────────┐            ┌──────────────────┐
+│  Python Package │ ──────────>│  ToastHUD.app    │
 │  (mactoast)     │ subprocess │  (Swift/SwiftUI) │
-└─────────────────┘         └──────────────────┘
+└─────────────────┘            └──────────────────┘
         │                            │
         │                            │
     User Code              Native macOS Rendering
